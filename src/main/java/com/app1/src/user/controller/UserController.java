@@ -2,7 +2,6 @@ package com.app1.src.user.controller;
 
 import jakarta.validation.Valid;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -10,6 +9,7 @@ import com.app1.src.user.model.User;
 import com.app1.src.user.repository.UserRepository;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -40,13 +40,17 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id,@Valid @RequestBody User userDetails) {
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody User userDetails) {
         return repo.findById(id)
                 .map(existingUser -> {
-                    existingUser.setName(userDetails.getName());
-                    existingUser.setEmail(userDetails.getEmail());
-                    existingUser.setUsername(userDetails.getUsername());
-                    existingUser.setPhone(userDetails.getPhone());
+                    if (!userDetails.getName().isEmpty())
+                        existingUser.setName(userDetails.getName());
+                    if (!userDetails.getEmail().isEmpty())
+                        existingUser.setEmail(userDetails.getEmail());
+                    if (!userDetails.getUsername().isEmpty())
+                        existingUser.setUsername(userDetails.getUsername());
+                    if (!userDetails.getPhone().isEmpty())
+                        existingUser.setPhone(userDetails.getPhone());
 
                     User updatedUser = repo.save(existingUser);
                     return ResponseEntity.ok(updatedUser);
@@ -54,10 +58,10 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (!repo.existsById(id)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        if (!repo.existsById(id))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         repo.deleteById(id);
         return ResponseEntity.noContent().build();
     }
